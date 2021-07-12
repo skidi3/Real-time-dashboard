@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Test page</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css"
+      integrity="sha512-8bHTC73gkZ7rZ7vpqUQThUDhqcNFyYi2xgDgPDHc+GXVGHXq+xPjynxIopALmOPqzo9JZj0k6OqqewdGO3EsrQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <style>
+      #chart_div {
+        width: 1200px;
+      }
+
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- <div class="ui raised very padded text container segment" id="display-data">
+      <h2 class="ui header">Test</h2>
+      <p>Open the console.</p>
+      <p></p>
+    </div> -->
+    <!-- CONTAINER FOR CHART -->
+    <div id="chart_div"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+    <script
+      type="text/javascript"
+      loading="lazy"
+      src="https://www.gstatic.com/charts/loader.js"
+    ></script>
+
+    <script>
+      let socket = io("http://localhost:3000/");
+      let raw_data = [];
+      socket.on("data", function (msg) {
+        raw_data = [...msg.Sheet1];
+        console.log("Data:", raw_data);
+      });
+      // load current chart package
+      google.charts.load("current", {
+        packages: ["corechart", "line"],
+      });
+      // set callback function when api loaded
+      google.charts.setOnLoadCallback(drawChart);
+      function drawChart() {
+        // create data object with default value
+        let data = google.visualization.arrayToDataTable([
+          ["Year", "CPU Usage"],
+          [0, 0],
+        ]);
+        // create options object with titles, colors, etc.
+        let options = {
+          title: "CPU Usage",
+          hAxis: {
+            title: "Time",
+          },
+          vAxis: {
+            title: "Usage",
+          },
+        };
+
+        // draw chart on load
+        let chart = new google.visualization.LineChart(
+          document.getElementById("chart_div")
+        );
+        chart.draw(data, options);
+
+        // interval for adding new data every 250ms
+        let index = 0;
+        setInterval(async function () {
+          // instead of this random, you can make an ajax call for the current cpu usage or what ever data you want to display
+          let random;
+          random = Number(raw_data[index].cpuusage);
+          console.log("Data points", random);
+          data.addRow([index, random]);
+          chart.draw(data, options);
+          index++;
+        }, 3000);
+      }
+    </script>
+    <script
+      src="https://code.jquery.com/jquery-3.1.1.min.js"
+      integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"
+      integrity="sha512-dqw6X88iGgZlTsONxZK9ePmJEFrmHwpuMrsUChjAw1mRUhUITE5QU9pkcSox+ynfLhL15Sv2al5A0LVyDCmtUw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+  </body>
+</html>
